@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-deep: #050510;
+  --bg-panel: rgba(10, 10, 30, 0.85);
+  --border: rgba(0, 212, 255, 0.15);
+  --accent-blue: #00d4ff;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --text-primary: #e2e8f0;
+  --text-muted: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 2px;
+}
+
+/* Glass panel */
+.glass {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Pulse animation */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 212, 255, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.6); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Scan line effect */
+@keyframes scan {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100vh; }
+}
+
+.scanlines::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Domain color badges */
+.domain-cs { color: #60a5fa; }
+.domain-physics { color: #a78bfa; }
+.domain-biology { color: #34d399; }
+.domain-chemistry { color: #fb923c; }
+.domain-medicine { color: #f87171; }
+.domain-math { color: #fbbf24; }
+.domain-engineering { color: #94a3b8; }
+.domain-other { color: #6b7280; }
+
+/* Status badges */
+.status-clean { color: #10b981; }
+.status-warning { color: #f59e0b; }
+.status-rejected { color: #ef4444; }
+.status-pending { color: #6b7280; }
+
+/* Blinking cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor::after {
+  content: '▊';
+  animation: blink 1s step-end infinite;
+  color: var(--accent-blue);
+}

@@ -17,7 +17,7 @@ const addActivity = (msg: string, type: 'info' | 'warn' | 'ai' = 'info') => {
 
 app.use('*', logger());
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-API-KEY'],
 }));
