@@ -4,9 +4,16 @@ import { GraphErrorBoundary } from './components/GraphErrorBoundary.js';
 import { ActivityFeed } from './components/ActivityFeed.js';
 import { Controls } from './components/Controls.js';
 import { ProposalsSidebar } from './components/ProposalsSidebar.js';
+import { AuthModal } from './components/AuthModal.js';
 import type { GraphData, ActivityItem, SynthesisProposal } from './types.js';
 
+const SESSION_KEY = 'kse_api_key';
+
 export default function App() {
+  const [apiKey, setApiKey] = useState<string | null>(() => sessionStorage.getItem(SESSION_KEY));
+  const [authNeeded, setAuthNeeded] = useState(false);
+  const [authError, setAuthError] = useState<string | undefined>();
+
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [], proposals: [] });
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [selectedProposal, setSelectedProposal] = useState<SynthesisProposal | null>(null);
@@ -16,80 +23,132 @@ export default function App() {
   const [linkCount, setLinkCount] = useState(0);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Authenticated fetch helper
+  const apiFetch = useCallback(async (url: string, init?: RequestInit): Promise<Response> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(init?.headers as Record<string, string>),
+    };
+    if (apiKey) headers['X-API-KEY'] = apiKey;
+    return fetch(url, { ...init, headers });
+  }, [apiKey]);
+
   const fetchGraph = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/synthesis/graph');
+      const res = await apiFetch('/api/v1/synthesis/graph');
+      if (res.status === 401) { setAuthNeeded(true); return; }
       if (!res.ok) return;
       const json = await res.json() as { success: boolean; data: GraphData; meta: { nodeCount: number; linkCount: number } };
       if (json.success) {
         setGraphData(json.data);
         setNodeCount(json.meta.nodeCount);
         setLinkCount(json.meta.linkCount);
+        setAuthNeeded(false);
       }
-    } catch {
-      // silent
-    }
-  }, []);
+    } catch { /* silent */ }
+  }, [apiFetch]);
 
   const fetchActivity = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/activity');
+      const res = await apiFetch('/api/v1/activity');
+      if (res.status === 401) { setAuthNeeded(true); return; }
       if (!res.ok) return;
       const json = await res.json() as { success: boolean; data: ActivityItem[] };
       if (json.success) setActivity(json.data);
-    } catch {
-      // silent
-    }
-  }, []);
+    } catch { /* silent */ }
+  }, [apiFetch]);
 
+  // Probe on mount to detect whether auth is required
   useEffect(() => {
-    fetchGraph();
-    fetchActivity();
+    const probe = async () => {
+      try {
+        const res = await apiFetch('/api/v1/synthesis/graph');
+        if (res.status === 401) {
+          setAuthNeeded(true);
+        } else if (res.ok) {
+          const json = await res.json() as { success: boolean; data: GraphData; meta: { nodeCount: number; linkCount: number } };
+          if (json.success) {
+            setGraphData(json.data);
+            setNodeCount(json.meta.nodeCount);
+            setLinkCount(json.meta.linkCount);
+          }
+          fetchActivity();
+        }
+      } catch { /* silent */ }
+    };
+    probe();
+  }, [apiFetch, fetchActivity]);
+
+  // Polling (only when authenticated)
+  useEffect(() => {
+    if (authNeeded) return;
+    if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(() => {
       fetchGraph();
       fetchActivity();
     }, 5000);
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [fetchGraph, fetchActivity]);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [authNeeded, fetchGraph, fetchActivity]);
+
+  const handleAuthSubmit = useCallback((key: string) => {
+    sessionStorage.setItem(SESSION_KEY, key);
+    setApiKey(key);
+    setAuthError(undefined);
+    // Validate immediately
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'X-API-KEY': key };
+    fetch('/api/v1/synthesis/graph', { headers }).then(async (res) => {
+      if (res.status === 401) {
+        setAuthError('Invalid API key — please try again.');
+        sessionStorage.removeItem(SESSION_KEY);
+        setApiKey(null);
+      } else if (res.ok) {
+        const json = await res.json() as { success: boolean; data: GraphData; meta: { nodeCount: number; linkCount: number } };
+        if (json.success) {
+          setGraphData(json.data);
+          setNodeCount(json.meta.nodeCount);
+          setLinkCount(json.meta.linkCount);
+        }
+        setAuthNeeded(false);
+      }
+    }).catch(() => setAuthError('Connection error — please try again.'));
+  }, []);
 
   const triggerScout = useCallback(async (seedQuery: string) => {
     setScoutRunning(true);
     setStatus('scanning');
     try {
-      const res = await fetch('/api/v1/scout/trigger', {
+      const res = await apiFetch('/api/v1/scout/trigger', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ seed_query: seedQuery }),
       });
+      if (res.status === 401) { setAuthNeeded(true); setStatus('idle'); return; }
       if (!res.ok) setStatus('error');
-      else {
-        // Keep scanning status for a bit to let the scout run
-        setTimeout(() => setStatus('idle'), 30000);
-      }
+      else setTimeout(() => setStatus('idle'), 30000);
     } catch {
       setStatus('error');
     } finally {
       setScoutRunning(false);
     }
-  }, []);
+  }, [apiFetch]);
 
   const validateProposal = useCallback(async (id: string, approve: boolean) => {
     try {
-      await fetch(`/api/v1/synthesis/${id}/validate`, {
+      const res = await apiFetch(`/api/v1/synthesis/${id}/validate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ approve, reasoning: '', expert_did: 'user' }),
       });
+      if (res.status === 401) { setAuthNeeded(true); return; }
       fetchGraph();
-    } catch {
-      // silent
-    }
-  }, [fetchGraph]);
+    } catch { /* silent */ }
+  }, [apiFetch, fetchGraph]);
 
   return (
     <div className="scanlines relative w-full h-full flex flex-col overflow-hidden" style={{ background: '#050510' }}>
+      {/* Auth Modal */}
+      {authNeeded && (
+        <AuthModal onSubmit={handleAuthSubmit} error={authError} />
+      )}
+
       {/* Top Bar */}
       <header className="glass flex items-center justify-between px-4 py-2 shrink-0 z-10" style={{ borderBottom: '1px solid rgba(0,212,255,0.2)' }}>
         <div className="flex items-center gap-3">
@@ -106,6 +165,15 @@ export default function App() {
           <span><span style={{ color: '#00d4ff' }}>{nodeCount}</span> nodes</span>
           <span><span style={{ color: '#8b5cf6' }}>{linkCount}</span> links</span>
           <span><span style={{ color: '#10b981' }}>{graphData.proposals?.filter(p => p.auditStatus === 'clean').length ?? 0}</span> verified</span>
+          {apiKey && (
+            <button
+              onClick={() => { sessionStorage.removeItem(SESSION_KEY); setApiKey(null); setAuthNeeded(true); setAuthError(undefined); }}
+              className="text-xs px-2 py-0.5 rounded transition-colors"
+              style={{ color: '#334155', border: '1px solid #1e293b', cursor: 'pointer', background: 'transparent', fontFamily: 'inherit' }}
+            >
+              ⎋ lock
+            </button>
+          )}
         </div>
       </header>
 
@@ -136,7 +204,7 @@ export default function App() {
               }}
             />
           </GraphErrorBoundary>
-          {nodeCount === 0 && (
+          {nodeCount === 0 && !authNeeded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <p className="text-4xl mb-4">🌌</p>
               <p className="text-sm font-bold tracking-widest" style={{ color: '#00d4ff' }}>SEMANTIC MESH EMPTY</p>
@@ -161,14 +229,7 @@ function StatusDot({ status }: { status: 'idle' | 'scanning' | 'error' }) {
     <span className="flex items-center gap-1.5">
       <span
         className={status === 'scanning' ? 'pulse-glow' : ''}
-        style={{
-          display: 'inline-block',
-          width: 7,
-          height: 7,
-          borderRadius: '50%',
-          background: color,
-          boxShadow: `0 0 6px ${color}`,
-        }}
+        style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}` }}
       />
       <span style={{ color }}>{label}</span>
     </span>
