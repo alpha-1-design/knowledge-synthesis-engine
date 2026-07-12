@@ -9,6 +9,14 @@ The **Knowledge Synthesis Engine (KSE)** is an enterprise-grade, multi-agent orc
 
 ---
 
+## 🖥️ Interface Preview
+
+![KSE Interface](docs/screenshot.jpg)
+
+> Observatory × Mission Control design language — deep navy, amber accents, IBM Plex Mono. The interactive 3D knowledge graph renders in-browser via WebGL/Three.js.
+
+---
+
 ## 🏛️ System Architecture
 
 KSE operates on a **four-layer intelligence stack**:
