@@ -1,0 +1,105 @@
+{
+  "nodes": [
+    {
+      "id": "56a59ccf2d86a642",
+      "name": "Introduction to High-Temperature Superconductivity for Solid",
+      "domain": "Engineering",
+      "description": "Superconductivity is one of the most amazing properties that metallic conductors exhibit. Electrical resistance is completely eliminated below the critical temperature (Tc), which is the most importan",
+      "sourceId": "2602.12608v2",
+      "sourceUrl": "https://arxiv.org/abs/2602.12608v2",
+      "createdAt": "2026-07-12T00:30:10.180Z"
+    },
+    {
+      "id": "5f90f7f015b6c839",
+      "name": "Contraction and expansion effects on the substitution-defect",
+      "domain": "Engineering",
+      "description": "Proposed as blanket structural materials for fusion power reactors, reduced activation ferritic/martensitic (RAFM) steel undergoes volume expanding and contracting in a cyclic mode under service envir",
+      "sourceId": "1008.3001v1",
+      "sourceUrl": "https://arxiv.org/abs/1008.3001v1",
+      "createdAt": "2026-07-12T00:30:10.254Z"
+    },
+    {
+      "id": "18cfe895e49d36bf",
+      "name": "Design of battery materials via defects and doping",
+      "domain": "Biology",
+      "description": "This chapter illustrates the use of defect physics as a conceptual and theoretical framework for understanding and designing battery materials. It starts with a methodology for first-principles studie",
+      "sourceId": "2211.04977v2",
+      "sourceUrl": "https://arxiv.org/abs/2211.04977v2",
+      "createdAt": "2026-07-12T00:30:10.386Z"
+    },
+    {
+      "id": "b5ceebfe4a5e6f4d",
+      "name": "Correlated Electron Materials and Field Effect Transistors f",
+      "domain": "Engineering",
+      "description": "Correlated electron systems are among the centerpieces of modern condensed matter sciences, where many interesting physical phenomena, such as metal-insulator transition and high-Tc superconductivity ",
+      "sourceId": "1212.2684v1",
+      "sourceUrl": "https://arxiv.org/abs/1212.2684v1",
+      "createdAt": "2026-07-12T00:30:10.447Z"
+    },
+    {
+      "id": "b66fdeb6130642b4",
+      "name": "Electromagnetic energy calibration of the SoLid detector wit",
+      "domain": "Biology",
+      "description": "SoLid is a neutrino experiment at very-short baseline searching for active-to-sterile oscillations of reactor antineutrinos. The detection principle is based on the pairing of two types of solid scint",
+      "sourceId": "2507.05180v4",
+      "sourceUrl": "https://arxiv.org/abs/2507.05180v4",
+      "createdAt": "2026-07-12T00:30:10.620Z"
+    }
+  ],
+  "links": [
+    {
+      "source": "56a59ccf2d86a642",
+      "target": "b66fdeb6130642b4",
+      "type": "synthesis",
+      "weight": 0.5
+    },
+    {
+      "source": "5f90f7f015b6c839",
+      "target": "b66fdeb6130642b4",
+      "type": "synthesis",
+      "weight": 0.5
+    },
+    {
+      "source": "18cfe895e49d36bf",
+      "target": "b5ceebfe4a5e6f4d",
+      "type": "synthesis",
+      "weight": 0.5
+    }
+  ],
+  "proposals": [
+    {
+      "id": "f5b15a175f1e5023",
+      "sourceNodeId": "56a59ccf2d86a642",
+      "targetNodeId": "b66fdeb6130642b4",
+      "hypothesis": "Latent structural similarity detected between \"Introduction to High-Temperature Superconductivity for Solid\" and \"Electromagnetic energy calibration of the SoLid detector wit\" — cross-domain application pending validation.",
+      "auditStatus": "warning",
+      "auditReasoning": "Audit skipped — API unavailable. Manual review recommended.",
+      "trustScore": 0.5,
+      "createdAt": "2026-07-12T00:30:10.894Z",
+      "validations": []
+    },
+    {
+      "id": "08167944658ea1c6",
+      "sourceNodeId": "5f90f7f015b6c839",
+      "targetNodeId": "b66fdeb6130642b4",
+      "hypothesis": "Latent structural similarity detected between \"Contraction and expansion effects on the substitution-defect\" and \"Electromagnetic energy calibration of the SoLid detector wit\" — cross-domain application pending validation.",
+      "auditStatus": "warning",
+      "auditReasoning": "Audit skipped — API unavailable. Manual review recommended.",
+      "trustScore": 0.5,
+      "createdAt": "2026-07-12T00:30:11.053Z",
+      "validations": []
+    },
+    {
+      "id": "2ce2b85ef4374502",
+      "sourceNodeId": "18cfe895e49d36bf",
+      "targetNodeId": "b5ceebfe4a5e6f4d",
+      "hypothesis": "Latent structural similarity detected between \"Design of battery materials via defects and doping\" and \"Correlated Electron Materials and Field Effect Transistors f\" — cross-domain application pending validation.",
+      "auditStatus": "warning",
+      "auditReasoning": "Audit skipped — API unavailable. Manual review recommended.",
+      "trustScore": 0.5,
+      "createdAt": "2026-07-12T00:30:11.155Z",
+      "validations": []
+    }
+  ],
+  "fileSources": []
+}
