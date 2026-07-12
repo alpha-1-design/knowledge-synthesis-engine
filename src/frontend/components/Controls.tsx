@@ -18,63 +18,100 @@ export function Controls({ onTrigger, running }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onTrigger(query.trim());
+    if (query.trim()) onTrigger(query.trim());
   };
 
   return (
-    <div className="p-3 shrink-0" style={{ borderBottom: '1px solid rgba(0,212,255,0.15)' }}>
-      <div className="text-xs font-bold tracking-widest mb-3" style={{ color: '#00d4ff' }}>
-        ◈ RESEARCH FOCUS
+    <div style={{ padding: '12px 12px 10px', borderBottom: '1px solid rgba(245,158,11,0.12)', flexShrink: 0 }}>
+      {/* Section header */}
+      <div style={{
+        borderLeft: '3px solid #f59e0b',
+        paddingLeft: 8,
+        fontFamily: 'IBM Plex Mono, monospace',
+        fontSize: 11,
+        fontWeight: 600,
+        color: '#f59e0b',
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        paddingBottom: 6,
+        marginBottom: 10,
+        borderBottom: '1px solid rgba(245,158,11,0.15)',
+      }}>
+        ◈ Research Focus
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <div className="relative">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Enter seed query..."
-            className="w-full text-xs px-3 py-2 rounded outline-none"
-            style={{
-              background: 'rgba(0,212,255,0.05)',
-              border: '1px solid rgba(0,212,255,0.2)',
-              color: '#e2e8f0',
-              fontFamily: 'inherit',
-            }}
-          />
-        </div>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Enter seed query..."
+          style={{
+            background: 'rgba(6,9,26,0.8)',
+            border: '1px solid rgba(245,158,11,0.2)',
+            borderRadius: 4,
+            padding: '7px 10px',
+            fontFamily: 'IBM Plex Mono, monospace',
+            fontSize: 11,
+            color: '#f1f5f9',
+            outline: 'none',
+            width: '100%',
+            transition: 'border-color 0.15s',
+          }}
+          onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.6)')}
+          onBlur={e => (e.target.style.borderColor = 'rgba(245,158,11,0.2)')}
+        />
 
         <button
           type="submit"
-          disabled={running}
-          className="text-xs font-bold py-2 px-3 rounded tracking-widest transition-all"
+          disabled={running || !query.trim()}
           style={{
-            background: running
-              ? 'rgba(0,212,255,0.1)'
-              : 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.2))',
-            border: `1px solid ${running ? 'rgba(0,212,255,0.2)' : 'rgba(0,212,255,0.4)'}`,
-            color: running ? '#334155' : '#00d4ff',
-            cursor: running ? 'not-allowed' : 'pointer',
+            background: running ? 'rgba(245,158,11,0.15)' : '#f59e0b',
+            border: 'none',
+            borderRadius: 4,
+            padding: '8px',
+            fontFamily: 'IBM Plex Mono, monospace',
+            fontSize: 11,
+            fontWeight: 600,
+            color: running ? 'rgba(245,158,11,0.5)' : '#000',
+            cursor: (running || !query.trim()) ? 'not-allowed' : 'pointer',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            transition: 'all 0.15s',
           }}
         >
-          {running ? '⟳ SCOUT ACTIVE...' : '⚡ TRIGGER AUTONOMOUS SCOUT'}
+          {running ? '⟳ Scout Active...' : '⚡ Trigger Scout'}
         </button>
       </form>
 
-      <div className="mt-3">
-        <p className="text-xs mb-1.5" style={{ color: '#334155' }}>Quick queries:</p>
-        <div className="flex flex-wrap gap-1">
+      {/* Quick query chips */}
+      <div style={{ marginTop: 10 }}>
+        <p style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+          Quick queries
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {EXAMPLE_QUERIES.map((q) => (
             <button
               key={q}
               onClick={() => setQuery(q)}
-              className="text-xs px-2 py-0.5 rounded transition-colors"
               style={{
-                background: 'rgba(139,92,246,0.1)',
-                border: '1px solid rgba(139,92,246,0.2)',
-                color: '#8b5cf6',
+                background: 'transparent',
+                border: '1px solid rgba(245,158,11,0.25)',
+                borderRadius: 3,
+                padding: '2px 6px',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSize: 10,
+                color: '#f59e0b',
                 cursor: 'pointer',
-                fontFamily: 'inherit',
+                transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.12)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,158,11,0.5)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,158,11,0.25)';
               }}
             >
               {q}

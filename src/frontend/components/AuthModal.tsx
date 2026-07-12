@@ -14,45 +14,76 @@ export function AuthModal({ onSubmit, error }: Props) {
   };
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ background: 'rgba(5,5,16,0.95)', backdropFilter: 'blur(8px)' }}
-    >
-      <div
-        className="glass rounded-lg p-8 w-full max-w-sm"
-        style={{ border: '1px solid rgba(0,212,255,0.3)', boxShadow: '0 0 40px rgba(0,212,255,0.1)' }}
-      >
-        <div className="text-center mb-6">
-          <p className="text-2xl mb-2">🧬</p>
-          <h1 className="text-sm font-bold tracking-widest mb-1" style={{ color: '#00d4ff' }}>
-            KNOWLEDGE SYNTHESIS ENGINE
-          </h1>
-          <p className="text-xs" style={{ color: '#64748b' }}>Semantic Mesh — Secure Access</p>
+    <div style={{
+      position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 50, background: 'rgba(6,9,26,0.95)', backdropFilter: 'blur(8px)',
+    }}>
+      <div style={{
+        background: '#0d1424',
+        border: '2px solid rgba(245,158,11,0.25)',
+        borderTop: '3px solid #f59e0b',
+        borderRadius: 8,
+        padding: '28px 28px 24px',
+        width: '100%',
+        maxWidth: 360,
+        boxShadow: '0 0 40px rgba(245,158,11,0.08)',
+      }}>
+        {/* Title */}
+        <div style={{ textAlign: 'center', marginBottom: 22 }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>⬡</div>
+          <div style={{
+            fontFamily: 'IBM Plex Mono, monospace',
+            fontSize: 12,
+            fontWeight: 600,
+            color: '#f59e0b',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            marginBottom: 4,
+          }}>
+            Authentication Required
+          </div>
+          <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#64748b' }}>
+            Knowledge Synthesis Engine — Secure Access
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div>
-            <label className="text-xs mb-1.5 block font-bold tracking-widest" style={{ color: '#64748b' }}>
-              ADMIN API KEY
+            <label style={{
+              fontFamily: 'IBM Plex Mono, monospace',
+              fontSize: 10,
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              display: 'block',
+              marginBottom: 5,
+            }}>
+              Admin API Key
             </label>
             <input
               type="password"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={e => setValue(e.target.value)}
               placeholder="Enter your X-API-KEY..."
               autoFocus
-              className="w-full text-sm px-3 py-2.5 rounded outline-none"
               style={{
-                background: 'rgba(0,212,255,0.05)',
-                border: `1px solid ${error ? 'rgba(239,68,68,0.5)' : 'rgba(0,212,255,0.2)'}`,
-                color: '#e2e8f0',
-                fontFamily: 'inherit',
+                width: '100%',
+                background: 'rgba(6,9,26,0.8)',
+                border: `1px solid ${error ? 'rgba(239,68,68,0.5)' : 'rgba(245,158,11,0.25)'}`,
+                borderRadius: 4,
+                padding: '8px 10px',
+                fontFamily: 'IBM Plex Mono, monospace',
+                fontSize: 12,
+                color: '#f1f5f9',
+                outline: 'none',
               }}
+              onFocus={e => (e.target.style.borderColor = error ? 'rgba(239,68,68,0.6)' : 'rgba(245,158,11,0.6)')}
+              onBlur={e => (e.target.style.borderColor = error ? 'rgba(239,68,68,0.5)' : 'rgba(245,158,11,0.25)')}
             />
           </div>
 
           {error && (
-            <p className="text-xs" style={{ color: '#ef4444' }}>
+            <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#ef4444' }}>
               ⚠ {error}
             </p>
           )}
@@ -60,21 +91,26 @@ export function AuthModal({ onSubmit, error }: Props) {
           <button
             type="submit"
             disabled={!value.trim()}
-            className="text-xs font-bold py-2.5 px-4 rounded tracking-widest transition-all"
             style={{
-              background: value.trim()
-                ? 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.2))'
-                : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${value.trim() ? 'rgba(0,212,255,0.4)' : 'rgba(255,255,255,0.1)'}`,
-              color: value.trim() ? '#00d4ff' : '#334155',
+              padding: '9px',
+              background: value.trim() ? '#f59e0b' : 'rgba(245,158,11,0.08)',
+              border: 'none',
+              borderRadius: 4,
+              color: value.trim() ? '#000' : '#334155',
+              fontFamily: 'IBM Plex Mono, monospace',
+              fontSize: 12,
+              fontWeight: 600,
               cursor: value.trim() ? 'pointer' : 'not-allowed',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              marginTop: 4,
             }}
           >
-            ⚡ AUTHENTICATE
+            ⚡ Authenticate
           </button>
 
-          <p className="text-xs text-center mt-1" style={{ color: '#334155', lineHeight: 1.5 }}>
-            This is the <code style={{ color: '#64748b' }}>ADMIN_API_KEY</code> secret you configured on the server.
+          <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 10, color: '#334155', textAlign: 'center', lineHeight: 1.5 }}>
+            This is the <code style={{ color: '#64748b', fontFamily: 'IBM Plex Mono, monospace' }}>ADMIN_API_KEY</code> secret configured on the server.
           </p>
         </form>
       </div>

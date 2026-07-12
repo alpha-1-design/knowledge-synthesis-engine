@@ -4,7 +4,11 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { Hono } from 'hono';
 import synthesisRoutes from './src/api/routes/synthesis';
+import ingestRoutes from './src/api/routes/ingest';
+import configRoutes from './src/api/routes/config';
+import graphRoutes from './src/api/routes/graph';
 import { serveStatic } from '@hono/node-server/serve-static';
+import { bodyLimit } from 'hono/body-limit';
 
 const app = new Hono();
 
@@ -67,7 +71,13 @@ app.post('/api/v1/scout/trigger', async (c) => {
   });
 });
 
+// 5. Body size limit for file uploads
+app.use('/api/v1/ingest/*', bodyLimit({ maxSize: 50 * 1024 * 1024 })); // 50MB
+
 app.route('/api/v1/synthesis', synthesisRoutes);
+app.route('/api/v1/ingest', ingestRoutes);
+app.route('/api/v1/config', configRoutes);
+app.route('/api/v1/graph', graphRoutes);
 
 app.notFound((c) => c.json({
   success: false,

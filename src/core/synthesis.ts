@@ -2,6 +2,8 @@ import crypto from 'node:crypto';
 import type { KnowledgeNode, SynthesisProposal } from './types.js';
 import { extractJSON } from '../utils/json.js';
 import { logger } from '../utils/logger.js';
+import { getAIConfig } from './config-store.js';
+import { callOllama } from './ollama.js';
 
 async function callGrok(prompt: string): Promise<string> {
   const apiKey = process.env.GROK_API_KEY;
@@ -89,7 +91,10 @@ Concept B: "${nodeB.name}" (${nodeB.domain}) — ${nodeB.description}
 
 Generate ONE specific, testable scientific hypothesis about how these two concepts from different domains could be related or how one could solve a problem in the other's domain. Be bold but grounded. Max 3 sentences.`;
 
-  const result = await callOpenRouter(prompt);
+  const config = getAIConfig();
+  const result = config.synthesisProvider === 'ollama'
+    ? await callOllama(config.ollamaEndpoint, config.ollamaSynthesisModel, prompt)
+    : await callOpenRouter(prompt);
 
   if (!result) {
     return `Latent structural similarity detected between "${nodeA.name}" and "${nodeB.name}" — cross-domain application pending validation.`;
@@ -121,12 +126,15 @@ Rules:
 - "warning": Hypothesis has merit but contains speculative leaps not fully supported
 - "rejected": Hypothesis is logically flawed or contradicts the evidence`;
 
-  const raw = await callGrok(prompt);
+  const config = getAIConfig();
+  const raw = config.auditProvider === 'ollama'
+    ? await callOllama(config.ollamaEndpoint, config.ollamaAuditModel, prompt)
+    : await callGrok(prompt);
 
   if (!raw) {
     return {
       status: 'warning',
-      reasoning: 'Audit skipped — Grok API unavailable. Manual review recommended.',
+      reasoning: 'Audit skipped — API unavailable. Manual review recommended.',
     };
   }
 

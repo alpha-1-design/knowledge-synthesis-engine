@@ -1,17 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-deep: #050510;
-  --bg-panel: rgba(10, 10, 30, 0.85);
-  --border: rgba(0, 212, 255, 0.15);
-  --accent-blue: #00d4ff;
-  --accent-purple: #8b5cf6;
-  --accent-green: #10b981;
-  --accent-amber: #f59e0b;
-  --text-primary: #e2e8f0;
-  --text-muted: #64748b;
+  --bg-deep:       #06091a;
+  --bg-panel:      #0d1424;
+  --bg-hover:      #111d35;
+  --border:        rgba(245, 158, 11, 0.18);
+  --border-strong: rgba(245, 158, 11, 0.45);
+  --amber:         #f59e0b;
+  --amber-dim:     rgba(245, 158, 11, 0.35);
+  --cyan:          #22d3ee;
+  --green:         #10b981;
+  --red:           #ef4444;
+  --purple:        #8b5cf6;
+  --text-primary:  #f1f5f9;
+  --text-muted:    #64748b;
+  --text-dim:      #334155;
+  --font-mono:     'IBM Plex Mono', monospace;
+  --font-ui:       'Inter', system-ui, sans-serif;
 }
 
 * {
@@ -29,22 +38,22 @@ html, body, #root {
 body {
   background: var(--bg-deep);
   color: var(--text-primary);
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-family: var(--font-ui);
 }
 
-/* Custom scrollbar */
+/* Slim amber scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 212, 255, 0.3);
+  background: rgba(245, 158, 11, 0.35);
   border-radius: 2px;
 }
 
-/* Glass panel */
+/* Glass panel — amber theme */
 .glass {
   background: var(--bg-panel);
   border: 1px solid var(--border);
@@ -52,22 +61,64 @@ body {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Pulse animation */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(0, 212, 255, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.6); }
+/* Panel header: amber left border, amber uppercase mono label */
+.panel-header {
+  border-left: 3px solid var(--amber);
+  padding-left: 8px;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+  padding-bottom: 6px;
+  margin-bottom: 0;
 }
 
+/* Status badge: pill, mono, 10px */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* Pulse animation — amber */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+  50%       { box-shadow: 0 0 20px rgba(245, 158, 11, 0.7); }
+}
 .pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Scan line effect */
-@keyframes scan {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 100vh; }
+/* Amber pulse for selected node ring */
+@keyframes amber-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.amber-pulse {
+  animation: amber-pulse 1.5s ease-in-out infinite;
 }
 
+/* Slide in from right for NodeDetailPanel */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.slide-in-right {
+  animation: slide-in-right 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scan line overlay */
+@keyframes scan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 100vh; }
+}
 .scanlines::after {
   content: '';
   position: fixed;
@@ -83,29 +134,29 @@ body {
   z-index: 9999;
 }
 
-/* Domain color badges */
-.domain-cs { color: #60a5fa; }
-.domain-physics { color: #a78bfa; }
-.domain-biology { color: #34d399; }
-.domain-chemistry { color: #fb923c; }
-.domain-medicine { color: #f87171; }
-.domain-math { color: #fbbf24; }
+/* Domain color classes */
+.domain-cs          { color: #60a5fa; }
+.domain-physics     { color: #a78bfa; }
+.domain-biology     { color: #34d399; }
+.domain-chemistry   { color: #fb923c; }
+.domain-medicine    { color: #f87171; }
+.domain-math        { color: #fbbf24; }
 .domain-engineering { color: #94a3b8; }
-.domain-other { color: #6b7280; }
+.domain-other       { color: #6b7280; }
 
-/* Status badges */
-.status-clean { color: #10b981; }
-.status-warning { color: #f59e0b; }
+/* Status text classes */
+.status-clean    { color: #10b981; }
+.status-warning  { color: #f59e0b; }
 .status-rejected { color: #ef4444; }
-.status-pending { color: #6b7280; }
+.status-pending  { color: #6b7280; }
 
 /* Blinking cursor */
 @keyframes blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50%       { opacity: 0; }
 }
 .cursor::after {
   content: '▊';
   animation: blink 1s step-end infinite;
-  color: var(--accent-blue);
+  color: var(--amber);
 }

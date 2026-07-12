@@ -10,38 +10,63 @@ interface Props {
 }
 
 const STATUS_CONFIG = {
-  clean: { color: '#10b981', label: '✓ VERIFIED', bg: 'rgba(16,185,129,0.1)' },
-  warning: { color: '#f59e0b', label: '⚠ WARNING', bg: 'rgba(245,158,11,0.1)' },
-  rejected: { color: '#ef4444', label: '✕ REJECTED', bg: 'rgba(239,68,68,0.1)' },
-  pending: { color: '#64748b', label: '◌ PENDING', bg: 'rgba(100,116,139,0.1)' },
+  clean:    { color: '#10b981', label: 'CLEAN',    bg: 'rgba(16,185,129,0.06)' },
+  warning:  { color: '#f59e0b', label: 'WARN',     bg: 'rgba(245,158,11,0.06)' },
+  rejected: { color: '#ef4444', label: 'REJECTED', bg: 'rgba(239,68,68,0.06)' },
+  pending:  { color: '#6b7280', label: 'PENDING',  bg: 'rgba(100,116,139,0.06)' },
 };
 
 export function ProposalsSidebar({ proposals, nodes, selected, onSelect, onValidate }: Props) {
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const sorted = [...proposals].sort((a, b) => {
     const order = { clean: 0, warning: 1, pending: 2, rejected: 3 };
     return (order[a.auditStatus] ?? 2) - (order[b.auditStatus] ?? 2);
   });
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
-      <div
-        className="px-3 py-2 text-xs font-bold tracking-widest shrink-0 flex items-center justify-between"
-        style={{ color: '#8b5cf6', borderBottom: '1px solid rgba(139,92,246,0.2)' }}
-      >
-        <span>◈ SYNTHESIS PROPOSALS</span>
-        <span style={{ color: '#334155' }}>{proposals.length}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{
+        padding: '10px 12px 8px',
+        borderBottom: '1px solid rgba(245,158,11,0.12)',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div style={{
+          borderLeft: '3px solid #f59e0b',
+          paddingLeft: 8,
+          fontFamily: 'IBM Plex Mono, monospace',
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#f59e0b',
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+        }}>
+          ◈ Synthesis Proposals
+        </div>
+        <span style={{
+          padding: '1px 7px',
+          borderRadius: 999,
+          background: 'rgba(245,158,11,0.1)',
+          border: '1px solid rgba(245,158,11,0.25)',
+          fontFamily: 'IBM Plex Mono, monospace',
+          fontSize: 10,
+          color: '#f59e0b',
+        }}>
+          {proposals.length}
+        </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
+      <div style={{ flex: 1, overflowY: 'auto', padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: 5 }}>
         {sorted.length === 0 && (
-          <p className="text-xs p-2" style={{ color: '#334155' }}>
+          <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, color: '#334155', padding: '8px 4px', lineHeight: 1.5 }}>
             No proposals yet. Run the Scout to generate cross-domain hypotheses.
           </p>
         )}
 
-        {sorted.map((p) => {
+        {sorted.map((p, idx) => {
           const cfg = STATUS_CONFIG[p.auditStatus] ?? STATUS_CONFIG.pending;
           const srcNode = nodeMap.get(p.sourceNodeId);
           const tgtNode = nodeMap.get(p.targetNodeId);
@@ -51,82 +76,107 @@ export function ProposalsSidebar({ proposals, nodes, selected, onSelect, onValid
             <div
               key={p.id}
               onClick={() => onSelect(isSelected ? null : p)}
-              className="rounded p-2 cursor-pointer transition-all"
               style={{
-                background: isSelected ? 'rgba(139,92,246,0.15)' : cfg.bg,
-                border: `1px solid ${isSelected ? 'rgba(139,92,246,0.5)' : `${cfg.color}33`}`,
+                background: isSelected ? '#111d35' : '#0a0f1e',
+                border: `1px solid ${isSelected ? `${cfg.color}55` : `${cfg.color}22`}`,
+                borderLeft: `3px solid ${cfg.color}`,
+                borderRadius: 4,
+                padding: '7px 8px',
+                cursor: 'pointer',
+                transition: 'background 0.12s',
+                position: 'relative',
               }}
+              onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = '#111d35'; }}
+              onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = '#0a0f1e'; }}
             >
-              {/* Header row */}
-              <div className="flex items-center justify-between mb-1">
-                <span
-                  className="text-xs font-bold"
-                  style={{ color: cfg.color, fontSize: 10 }}
-                >
+              {/* Top row: status badge + P-number + trust score */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{
+                  padding: '0px 5px',
+                  borderRadius: 999,
+                  background: `${cfg.color}22`,
+                  color: cfg.color,
+                  fontFamily: 'IBM Plex Mono, monospace',
+                  fontSize: 9,
+                  fontWeight: 600,
+                }}>
                   {cfg.label}
                 </span>
-                <span style={{ color: '#64748b', fontSize: 10 }}>
-                  {Math.round(p.trustScore * 100)}%
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: '#22d3ee' }}>
+                    {Math.round(p.trustScore * 100)}%
+                  </span>
+                  <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, color: '#334155' }}>
+                    P{idx + 1}
+                  </span>
+                </div>
               </div>
 
               {/* Node pair */}
-              <div className="text-xs mb-1" style={{ color: '#e2e8f0' }}>
+              <div style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11, marginBottom: 4, color: '#e2e8f0' }}>
                 <span style={{ color: '#60a5fa' }}>{srcNode?.name ?? p.sourceNodeId.slice(0, 8)}</span>
                 <span style={{ color: '#334155' }}> × </span>
                 <span style={{ color: '#a78bfa' }}>{tgtNode?.name ?? p.targetNodeId.slice(0, 8)}</span>
               </div>
 
-              {/* Hypothesis preview */}
+              {/* Hypothesis preview — 2 line clamp */}
+              <p style={{
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSize: 10,
+                color: '#64748b',
+                lineHeight: 1.45,
+                display: '-webkit-box',
+                WebkitLineClamp: isSelected ? undefined : 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: isSelected ? 'visible' : 'hidden',
+                marginBottom: 4,
+              }}>
+                {p.hypothesis}
+              </p>
+
+              {/* Trust bar */}
+              <div style={{ height: 2, background: 'rgba(255,255,255,0.05)', borderRadius: 1, marginBottom: isSelected ? 8 : 0 }}>
+                <div style={{
+                  height: '100%',
+                  width: `${p.trustScore * 100}%`,
+                  background: p.auditStatus === 'clean' ? '#f59e0b'
+                    : p.auditStatus === 'warning' ? 'rgba(245,158,11,0.5)'
+                    : p.auditStatus === 'rejected' ? '#ef4444'
+                    : '#334155',
+                  borderRadius: 1,
+                }} />
+              </div>
+
+              {/* Expanded: audit + actions */}
               {isSelected && (
-                <div className="mt-2">
-                  <p className="text-xs mb-2" style={{ color: '#94a3b8', lineHeight: 1.5 }}>
-                    {p.hypothesis}
-                  </p>
-                  <p className="text-xs mb-2 italic" style={{ color: '#64748b', lineHeight: 1.4 }}>
+                <div>
+                  <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 10, color: '#64748b', lineHeight: 1.5, fontStyle: 'italic', marginBottom: 8 }}>
                     Audit: {p.auditReasoning}
                   </p>
-                  <div className="flex gap-2">
+                  <div style={{ display: 'flex', gap: 5 }}>
                     <button
-                      onClick={(e) => { e.stopPropagation(); onValidate(p.id, true); }}
-                      className="flex-1 text-xs py-1 rounded font-bold"
+                      onClick={e => { e.stopPropagation(); onValidate(p.id, true); }}
                       style={{
-                        background: 'rgba(16,185,129,0.15)',
-                        border: '1px solid rgba(16,185,129,0.4)',
-                        color: '#10b981',
+                        flex: 1, padding: '5px',
+                        background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.4)',
+                        borderRadius: 3, color: '#10b981',
+                        fontFamily: 'IBM Plex Mono, monospace', fontSize: 10,
                         cursor: 'pointer',
-                        fontFamily: 'inherit',
                       }}
-                    >
-                      ✓ APPROVE
-                    </button>
+                    >✓ APPROVE</button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); onValidate(p.id, false); }}
-                      className="flex-1 text-xs py-1 rounded font-bold"
+                      onClick={e => { e.stopPropagation(); onValidate(p.id, false); }}
                       style={{
-                        background: 'rgba(239,68,68,0.15)',
-                        border: '1px solid rgba(239,68,68,0.4)',
-                        color: '#ef4444',
+                        flex: 1, padding: '5px',
+                        background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.4)',
+                        borderRadius: 3, color: '#ef4444',
+                        fontFamily: 'IBM Plex Mono, monospace', fontSize: 10,
                         cursor: 'pointer',
-                        fontFamily: 'inherit',
                       }}
-                    >
-                      ✕ REJECT
-                    </button>
+                    >✕ REJECT</button>
                   </div>
                 </div>
               )}
-
-              {/* Trust bar */}
-              <div className="mt-1.5 h-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${p.trustScore * 100}%`,
-                    background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}88)`,
-                  }}
-                />
-              </div>
             </div>
           );
         })}

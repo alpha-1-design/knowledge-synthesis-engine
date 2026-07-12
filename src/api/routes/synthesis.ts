@@ -9,16 +9,8 @@ synthesisRoutes.get('/graph', (c) => {
   const graph = getGraph();
   return c.json({
     success: true,
-    data: {
-      nodes: graph.nodes,
-      links: graph.links,
-      proposals: graph.proposals,
-    },
-    meta: {
-      nodeCount: graph.nodes.length,
-      linkCount: graph.links.length,
-      proposalCount: graph.proposals.length,
-    },
+    data: { nodes: graph.nodes, links: graph.links, proposals: graph.proposals, fileSources: graph.fileSources || [] },
+    meta: { nodeCount: graph.nodes.length, linkCount: graph.links.length, proposalCount: graph.proposals.length },
   });
 });
 

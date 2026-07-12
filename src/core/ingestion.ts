@@ -3,6 +3,8 @@ import type { ArXivPaper } from './arxiv.js';
 import type { KnowledgeNode } from './types.js';
 import { extractJSON } from '../utils/json.js';
 import { logger } from '../utils/logger.js';
+import { getAIConfig } from './config-store.js';
+import { callOllama } from './ollama.js';
 
 export function generateCID(name: string, domain: string): string {
   return crypto
@@ -51,6 +53,14 @@ async function callGemini(prompt: string): Promise<string> {
   }
 }
 
+async function callExtractionProvider(prompt: string): Promise<string> {
+  const config = getAIConfig();
+  if (config.extractionProvider === 'ollama') {
+    return callOllama(config.ollamaEndpoint, config.ollamaExtractionModel, prompt);
+  }
+  return callGemini(prompt);
+}
+
 export async function extractConceptsFromPaper(paper: ArXivPaper): Promise<KnowledgeNode[]> {
   const prompt = `You are a scientific concept extractor. Given this research paper abstract, extract 1-3 core scientific concepts that could be nodes in a knowledge graph.
 
@@ -67,7 +77,7 @@ Rules:
 - Domain must be one of the listed options
 - Names should be 2-5 words, specific and technical`;
 
-  const raw = await callGemini(prompt);
+  const raw = await callExtractionProvider(prompt);
   if (!raw) return fallbackExtraction(paper);
 
   try {
@@ -82,8 +92,42 @@ Rules:
       createdAt: new Date().toISOString(),
     }));
   } catch (err) {
-    logger.warn('[Ingestion] Failed to parse Gemini response, using fallback', { err: String(err) });
+    logger.warn('[Ingestion] Failed to parse extraction response, using fallback', { err: String(err) });
     return fallbackExtraction(paper);
+  }
+}
+
+export async function extractConceptsFromText(text: string, title: string): Promise<KnowledgeNode[]> {
+  const prompt = `You are a scientific concept extractor. Given this text, extract 1-3 core scientific concepts that could be nodes in a knowledge graph.
+
+Title: ${title}
+Text: ${text.slice(0, 2000)}
+
+Return ONLY a JSON array like:
+[
+  { "name": "Concept Name", "domain": "Physics|Biology|Chemistry|CS|Math|Medicine|Engineering|Other", "description": "One sentence description." }
+]
+
+Rules:
+- Each concept must be a specific, reusable scientific concept (not the document itself)
+- Domain must be one of the listed options
+- Names should be 2-5 words, specific and technical`;
+
+  const raw = await callExtractionProvider(prompt);
+  if (!raw) return fallbackTextExtraction(text, title);
+
+  try {
+    const concepts = extractJSON<ExtractedConcept[]>(raw);
+    return concepts.slice(0, 3).map((c): KnowledgeNode => ({
+      id: generateCID(c.name, c.domain),
+      name: c.name,
+      domain: c.domain,
+      description: c.description,
+      createdAt: new Date().toISOString(),
+    }));
+  } catch (err) {
+    logger.warn('[Ingestion] Failed to parse extraction response for text, using fallback', { err: String(err) });
+    return fallbackTextExtraction(text, title);
   }
 }
 
@@ -99,6 +143,20 @@ function fallbackExtraction(paper: ArXivPaper): KnowledgeNode[] {
       description: paper.abstract.slice(0, 200),
       sourceId: paper.id,
       sourceUrl: paper.url,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+}
+
+function fallbackTextExtraction(text: string, title: string): KnowledgeNode[] {
+  const name = title.split(':')[0].trim().slice(0, 60);
+  const domain = guessDomain(title + ' ' + text.slice(0, 500));
+  return [
+    {
+      id: generateCID(name, domain),
+      name,
+      domain,
+      description: text.slice(0, 200),
       createdAt: new Date().toISOString(),
     },
   ];
